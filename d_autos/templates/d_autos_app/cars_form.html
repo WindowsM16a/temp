@@ -1,0 +1,197 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Car Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-car"></i>
+    {% if object %}Edit Car - {{ object.brand }} {{ object.model }}{% else %}Add New Car{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'car_list' %}{% endblock %}
+{% block cancel_url %}{% url 'car_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- Car Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.brand.id_for_label }}">Brand</label>
+            {{ form.brand }}
+            {% if form.brand.errors %}
+            <div class="errorlist">{{ form.brand.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.model.id_for_label }}">Model</label>
+            {{ form.model }}
+            {% if form.model.errors %}
+            <div class="errorlist">{{ form.model.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.year.id_for_label }}">Manufacturing Year</label>
+            {{ form.year }}
+            {% if form.year.errors %}
+            <div class="errorlist">{{ form.year.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.plate_number.id_for_label }}">Plate Number</label>
+            {{ form.plate_number }}
+            {% if form.plate_number.errors %}
+            <div class="errorlist">{{ form.plate_number.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Color Selection Section -->
+<div class="form-section">
+    <h3><i class="fas fa-palette"></i> Color & Appearance</h3>
+    
+    <div class="form-group">
+        <label for="{{ form.color.id_for_label }}">Car Color</label>
+        {{ form.color }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Click on a color or use custom color picker
+        </div>
+        {% if form.color.errors %}
+        <div class="errorlist">{{ form.color.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <!-- Color Preview -->
+    <div class="image-preview-container">
+        <div class="image-preview" id="color-preview" 
+             data-color="{% if object and object.color %}{{ object.color }}{% else %}#3498db{% endif %}">
+            <i class="fas fa-car fa-2x" style="color: white; opacity: 0.5;"></i>
+        </div>
+        <div>
+            <h4>Color Preview</h4>
+            <p>Selected color will appear in rentals and reports</p>
+        </div>
+    </div>
+</div>
+
+<!-- Pricing & Availability Section -->
+<div class="form-section">
+    <h3><i class="fas fa-dollar-sign"></i> Pricing & Availability</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.rental_price_per_day.id_for_label }}">Daily Rental Price (₵)</label>
+            {{ form.rental_price_per_day }}
+            {% if form.rental_price_per_day.errors %}
+            <div class="errorlist">{{ form.rental_price_per_day.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label>Availability Status</label>
+            <div class="radio-group">
+                <label class="radio-option {% if form.availability.value == True %}selected{% endif %}">
+                    <input type="radio" name="availability" value="True" 
+                           {% if form.availability.value == True %}checked{% endif %}>
+                    <i class="fas fa-check-circle"></i>
+                    Available
+                </label>
+                <label class="radio-option {% if form.availability.value == False %}selected{% endif %}">
+                    <input type="radio" name="availability" value="False" 
+                           {% if form.availability.value == False %}checked{% endif %}>
+                    <i class="fas fa-times-circle"></i>
+                    Unavailable
+                </label>
+            </div>
+            {% if form.availability.errors %}
+            <div class="errorlist">{{ form.availability.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Additional Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-cogs"></i> Additional Details</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.mileage.id_for_label }}">Current Mileage (km)</label>
+            {{ form.mileage }}
+            {% if form.mileage.errors %}
+            <div class="errorlist">{{ form.mileage.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.fuel_type.id_for_label }}">Fuel Type</label>
+            {{ form.fuel_type }}
+            {% if form.fuel_type.errors %}
+            <div class="errorlist">{{ form.fuel_type.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.notes.id_for_label }}">Additional Notes</label>
+        {{ form.notes }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Add any special features or requirements for this car
+        </div>
+        {% if form.notes.errors %}
+        <div class="errorlist">{{ form.notes.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update color preview when color changes
+    const colorField = document.getElementById('id_color');
+    const colorPreview = document.getElementById('color-preview');
+    
+    if (colorField && colorPreview) {
+        function updateColorPreview() {
+            const color = colorField.value || colorPreview.dataset.color || '#3498db';
+            colorPreview.style.backgroundColor = color;
+            
+            // Update radio button selection for color picker
+            document.querySelectorAll('.color-option').forEach(option => {
+                if (option.dataset.value === color) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+        
+        colorField.addEventListener('change', updateColorPreview);
+        updateColorPreview(); // Initial update
+    }
+    
+    // Style radio buttons
+    document.querySelectorAll('.radio-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.radio-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            this.parentElement.classList.add('selected');
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>{% block title %}Form{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>{% block form_title %}Add Record{% endblock %}</h2>
+        <a href="{% block back_url %}{% url 'dashboard' %}{% endblock %}" class="btn secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="form-messages">
+        {% for message in messages %}
+        <div class="form-message {{ message.tags }}">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="form-message error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+        
+        {% block form_content %}
+        <!-- Default form rendering -->
+        {{ form.as_p }}
+        {% endblock %}
+        
+        <div class="form-actions">
+            <button type="submit" class="btn primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{% block cancel_url %}{% url 'dashboard' %}{% endblock %}" class="btn secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

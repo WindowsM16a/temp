@@ -1,0 +1,329 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Payment Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-credit-card"></i>
+    {% if object %}Edit Payment - #{{ object.id }}{% else %}Record New Payment{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Payment Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-file-invoice-dollar"></i> Payment Details</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.customer.id_for_label }}">Customer</label>
+            {{ form.customer }}
+            {% if form.customer.errors %}
+            <div class="errorlist">{{ form.customer.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.rental.id_for_label }}">Rental (Optional)</label>
+            {{ form.rental }}
+            {% if form.rental.errors %}
+            <div class="errorlist">{{ form.rental.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.amount.id_for_label }}">Amount (₵)</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}
+            <div class="errorlist">{{ form.amount.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.payment_date.id_for_label }}">Payment Date</label>
+            {{ form.payment_date }}
+            {% if form.payment_date.errors %}
+            <div class="errorlist">{{ form.payment_date.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label>Payment Method</label>
+        <input type="hidden" name="payment_method" id="id_payment_method" value="{% if form.payment_method.value %}{{ form.payment_method.value }}{% elif form.initial.payment_method %}{{ form.initial.payment_method }}{% elif object.payment_method %}{{ object.payment_method }}{% else %}cash{% endif %}">
+        
+        <div class="payment-methods">
+            <div class="payment-method cash" data-value="cash" onclick="selectPaymentMethod(this)">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Cash</span>
+            </div>
+            <div class="payment-method credit" data-value="credit_card" onclick="selectPaymentMethod(this)">
+                <i class="fas fa-credit-card"></i>
+                <span>Credit Card</span>
+            </div>
+            <div class="payment-method mobile" data-value="mobile_money" onclick="selectPaymentMethod(this)">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile Money</span>
+            </div>
+            <div class="payment-method bank" data-value="bank_transfer" onclick="selectPaymentMethod(this)">
+                <i class="fas fa-university"></i>
+                <span>Bank Transfer</span>
+            </div>
+        </div>
+        {% if form.payment_method.errors %}
+        <div class="errorlist">{{ form.payment_method.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.payment_date.id_for_label }}">Payment Date</label>
+            {{ form.payment_date }}
+            {% if form.payment_date.errors %}
+            <div class="errorlist">{{ form.payment_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label>Payment Status</label>
+            {{ form.payment_status }}
+            {% if form.payment_status.errors %}
+            <div class="errorlist">{{ form.payment_status.errors }}</div>
+            {% endif %}
+            
+            {% if form.payment_status.value %}
+            <div class="payment-status-indicator {{ form.payment_status.value|lower }}">
+                <i class="fas fa-{% if form.payment_status.value == 'paid' %}check-circle{% elif form.payment_status.value == 'pending' %}clock{% else %}times-circle{% endif %}"></i>
+                {{ form.payment_status.value|title }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-receipt"></i> Transaction Information</h3>
+    
+    <div class="form-group">
+        <label for="{{ form.transaction_id.id_for_label }}">Transaction ID</label>
+        {{ form.transaction_id }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Optional: Reference number from payment processor
+        </div>
+        {% if form.transaction_id.errors %}
+        <div class="errorlist">{{ form.transaction_id.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.notes.id_for_label }}">Payment Notes</label>
+        {{ form.notes }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Add any special notes about this payment
+        </div>
+        {% if form.notes.errors %}
+        <div class="errorlist">{{ form.notes.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Payment Summary (Dynamic) -->
+<div class="payment-summary">
+    <h4><i class="fas fa-file-invoice-dollar"></i> Payment Summary</h4>
+    <div class="summary-row">
+        <span>Amount:</span>
+        <span id="summary-amount">₵0.00</span>
+    </div>
+    <div class="summary-row">
+        <span>Payment Method:</span>
+        <span id="summary-method">Cash</span>
+    </div>
+    <div class="summary-row">
+        <span>Date:</span>
+        <span id="summary-date">{% if form.payment_date.value %}{{ form.payment_date.value }}{% elif form.initial.payment_date %}{{ form.initial.payment_date|date:"M d, Y" }}{% elif object.payment_date %}{{ object.payment_date|date:"M d, Y" }}{% else %}{% now "M d, Y" %}{% endif %}</span>
+    </div>
+    <div class="summary-row total">
+        <span>Total to Pay:</span>
+        <span id="summary-total">₵0.00</span>
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+// Function to update payment method in summary (global scope)
+function updatePaymentMethodSummary(method) {
+    const summaryMethod = document.getElementById('summary-method');
+    if (summaryMethod) {
+        const methodNames = {
+            'cash': 'Cash',
+            'credit_card': 'Credit Card',
+            'mobile_money': 'Mobile Money',
+            'bank_transfer': 'Bank Transfer'
+        };
+        summaryMethod.textContent = methodNames[method] || 'Cash';
+    }
+}
+
+// Function to select payment method (called from onclick)
+function selectPaymentMethod(element) {
+    // Remove selected class from all methods
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    paymentMethods.forEach(m => m.classList.remove('selected'));
+    
+    // Add selected class to clicked method
+    element.classList.add('selected');
+    
+    // Update hidden field
+    const paymentMethodHiddenField = document.getElementById('id_payment_method');
+    const value = element.dataset.value;
+    paymentMethodHiddenField.value = value;
+    
+    // Update summary
+    updatePaymentMethodSummary(value);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default selection if no value is set
+    const paymentMethodHiddenField = document.getElementById('id_payment_method');
+    if (!paymentMethodHiddenField.value) {
+        const defaultMethod = document.querySelector('.payment-method[data-value="cash"]');
+        if (defaultMethod) {
+            defaultMethod.classList.add('selected');
+            paymentMethodHiddenField.value = 'cash';
+            updatePaymentMethodSummary('cash');
+        }
+    } else {
+        // Set initial selected state based on current value
+        const currentMethod = document.querySelector('.payment-method[data-value="' + paymentMethodHiddenField.value + '"]');
+        if (currentMethod) {
+            currentMethod.classList.add('selected');
+            updatePaymentMethodSummary(paymentMethodHiddenField.value);
+        }
+    }
+    
+    // Amount handling: keep numeric value in input and update summary
+    const amountField = document.getElementById('id_amount');
+    if (amountField) {
+        // Normalize initial value (strip currency symbol if present)
+        if (amountField.value) {
+            amountField.value = amountField.value.replace(/₵|,/g, '').trim();
+        }
+
+        // Update summary on input without altering the input value format
+        amountField.addEventListener('input', function() {
+            const raw = this.value.replace(/₵|,/g, '').trim();
+            const amount = parseFloat(raw);
+            const summaryAmount = document.getElementById('summary-amount');
+            const summaryTotal = document.getElementById('summary-total');
+            if (!isNaN(amount)) {
+                if (summaryAmount) summaryAmount.textContent = '₵' + amount.toFixed(2);
+                if (summaryTotal) summaryTotal.textContent = '₵' + amount.toFixed(2);
+            } else {
+                if (summaryAmount) summaryAmount.textContent = '₵0.00';
+                if (summaryTotal) summaryTotal.textContent = '₵0.00';
+            }
+        });
+
+        // On blur, format the input to two decimals (numeric only)
+        amountField.addEventListener('blur', function() {
+            const raw = this.value.replace(/₵|,/g, '').trim();
+            const amount = parseFloat(raw);
+            if (!isNaN(amount)) {
+                this.value = amount.toFixed(2);
+            } else {
+                this.value = '';
+            }
+        });
+
+        // On focus, remove any grouping/currency characters for easy editing
+        amountField.addEventListener('focus', function() {
+            this.value = this.value.replace(/₵|,/g, '').trim();
+        });
+
+        // Before form submit, ensure the field contains only numeric value
+        const parentForm = amountField.closest('form');
+        if (parentForm) {
+            parentForm.addEventListener('submit', function() {
+                amountField.value = (amountField.value || '').toString().replace(/₵|,/g, '').trim();
+            });
+        }
+
+        // Initialize summary from initial value
+        (function initAmountSummary() {
+            const raw = amountField.value.replace(/₵|,/g, '').trim();
+            const amount = parseFloat(raw) || 0;
+            const summaryAmount = document.getElementById('summary-amount');
+            const summaryTotal = document.getElementById('summary-total');
+            if (summaryAmount) summaryAmount.textContent = '₵' + amount.toFixed(2);
+            if (summaryTotal) summaryTotal.textContent = '₵' + amount.toFixed(2);
+        })();
+    }
+    
+    // Update payment status indicator
+    const statusField = document.getElementById('id_payment_status');
+    if (statusField) {
+        statusField.addEventListener('change', function() {
+            const statusIndicator = document.querySelector('.payment-status-indicator');
+            if (statusIndicator) {
+                statusIndicator.className = `payment-status-indicator ${this.value}`;
+                statusIndicator.innerHTML = `
+                    <i class="fas fa-${this.value === 'paid' ? 'check-circle' : this.value === 'pending' ? 'clock' : 'times-circle'}"></i>
+                    ${this.value.charAt(0).toUpperCase() + this.value.slice(1)}
+                `;
+            }
+        });
+        
+        // Initial setup
+        if (statusField.value) {
+            statusField.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Initialize summary with current values
+    if (paymentMethodHiddenField.value) {
+        updatePaymentMethodSummary(paymentMethodHiddenField.value);
+    }
+    if (amountField && amountField.value) {
+        const amount = parseFloat(amountField.value.replace('₵', '')) || 0;
+        document.getElementById('summary-amount').textContent = '₵' + amount.toFixed(2);
+        document.getElementById('summary-total').textContent = '₵' + amount.toFixed(2);
+    }
+
+    // Payment date: reflect input value in the summary (format to 'M d, Y')
+    const paymentDateField = document.getElementById('id_payment_date');
+    const summaryDate = document.getElementById('summary-date');
+    function formatDateForSummary(iso) {
+        if (!iso) return '';
+        // iso expected as YYYY-MM-DD
+        const parts = iso.split('-');
+        if (parts.length !== 3) return iso;
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        const opts = { month: 'short', day: '2-digit', year: 'numeric' };
+        return d.toLocaleDateString(undefined, opts);
+    }
+    if (paymentDateField) {
+        // Initialize
+        if (paymentDateField.value) {
+            const formatted = formatDateForSummary(paymentDateField.value);
+            if (summaryDate) summaryDate.textContent = formatted;
+        }
+        // Update on change
+        paymentDateField.addEventListener('change', function() {
+            const formatted = formatDateForSummary(this.value);
+            if (summaryDate) summaryDate.textContent = formatted || '{% now "M d, Y" %}';
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Customer Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-user"></i>
+    {% if object %}Edit Customer - {{ object.first_name }} {{ object.last_name }}{% else %}Add New Customer{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Personal Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+            <div class="errorlist">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+            <div class="errorlist">{{ form.last_name.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.email.id_for_label }}">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="errorlist">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+            {{ form.phone }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                Format: (XXX) XXX-XXXX
+            </div>
+            {% if form.phone.errors %}
+            <div class="errorlist">{{ form.phone.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.address.id_for_label }}">Address</label>
+        {{ form.address }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Enter full address including street, city, and postal code
+        </div>
+        {% if form.address.errors %}
+        <div class="errorlist">{{ form.address.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- License Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-id-card"></i> Driver's License Information</h3>
+    
+    <div class="form-group">
+        <label for="{{ form.license_number.id_for_label }}">License Number</label>
+        {{ form.license_number }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Format: AA-123456 or similar
+        </div>
+        {% if form.license_number.errors %}
+        <div class="errorlist">{{ form.license_number.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="date-range">
+        <div class="form-group">
+            <label for="{{ form.license_issue_date.id_for_label }}">Issue Date</label>
+            <div class="date-group">
+                {{ form.license_issue_date }}
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            {% if form.license_issue_date.errors %}
+            <div class="errorlist">{{ form.license_issue_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.license_expiry_date.id_for_label }}">Expiry Date</label>
+            <div class="date-group">
+                {{ form.license_expiry_date }}
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            {% if form.license_expiry_date.errors %}
+            <div class="errorlist">{{ form.license_expiry_date.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- License Status Display -->
+    <div id="license-status-display">
+        {% if object and object.license_expiry_date %}
+            {% with today=current_date|date:"Y-m-d" expiry=object.license_expiry_date|date:"Y-m-d" %}
+                {% if expiry < today %}
+                    <div class="license-status expired">
+                        <i class="fas fa-times-circle"></i>
+                        License Expired
+                    </div>
+                {% else %}
+                    {% with days_left=object.license_expiry_date|timeuntil:current_date %}
+                        {% if "day" in days_left and days_left|slice:"0:2"|add:"0" <= 30 %}
+                            <div class="license-status expiring">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                License Expiring Soon
+                            </div>
+                        {% else %}
+                            <div class="license-status valid">
+                                <i class="fas fa-check-circle"></i>
+                                License Valid
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Additional Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-info-circle"></i> Additional Information</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}
+            <div class="errorlist">{{ form.date_of_birth.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.national_id.id_for_label }}">National ID</label>
+            {{ form.national_id }}
+            {% if form.national_id.errors %}
+            <div class="errorlist">{{ form.national_id.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.notes.id_for_label }}">Customer Notes</label>
+        {{ form.notes }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Add any special notes about this customer (preferences, restrictions, etc.)
+        </div>
+        {% if form.notes.errors %}
+        <div class="errorlist">{{ form.notes.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format phone number
+    const phoneField = document.getElementById('id_phone');
+    if (phoneField) {
+        phoneField.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 3 && value.length <= 6) {
+                value = value.replace(/(\d{3})(\d+)/, '($1) $2');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d+)/, '($1) $2-$3');
+            }
+            
+            e.target.value = value;
+        });
+    }
+    
+    // Set min/max dates for license
+    const issueDateField = document.getElementById('id_license_issue_date');
+    const expiryDateField = document.getElementById('id_license_expiry_date');
+    
+    if (issueDateField && expiryDateField) {
+        const today = new Date().toISOString().split('T')[0];
+        const minIssueDate = new Date();
+        minIssueDate.setFullYear(minIssueDate.getFullYear() - 20);
+        
+        issueDateField.setAttribute('max', today);
+        issueDateField.setAttribute('min', minIssueDate.toISOString().split('T')[0]);
+        
+        expiryDateField.setAttribute('min', today);
+        
+        // Ensure expiry is after issue
+        issueDateField.addEventListener('change', function() {
+            if (this.value) {
+                const minExpiry = new Date(this.value);
+                minExpiry.setDate(minExpiry.getDate() + 1);
+                expiryDateField.setAttribute('min', minExpiry.toISOString().split('T')[0]);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

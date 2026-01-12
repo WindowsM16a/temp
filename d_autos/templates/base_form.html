@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Form - Car Rental System{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<!-- ================= FORM PAGE ================= -->
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>{% block form_title %}Form{% endblock %}</h2>
+        <a href="{% block back_url %}{% endblock %}" class="btn secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% block form_content %}
+        <!-- Form content goes here -->
+        {% endblock %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{% block cancel_url %}{% endblock %}" class="btn secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+    {% block after_form %}
+    {% endblock %}
+</div>
+
+<script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

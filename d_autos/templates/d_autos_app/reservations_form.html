@@ -1,0 +1,463 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Reservation Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-calendar-check"></i>
+    {% if object %}Edit Reservation - #{{ object.id }}{% else %}Create New Reservation{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Reservation Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-calendar-alt"></i> Reservation Details</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.customer.id_for_label }}">Customer</label>
+            {{ form.customer }}
+            {% if form.customer.errors %}
+            <div class="errorlist">{{ form.customer.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.car.id_for_label }}">Car</label>
+            {{ form.car }}
+            {% if form.car.errors %}
+            <div class="errorlist">{{ form.car.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="reservation-dates">
+        <div class="form-group">
+            <label for="{{ form.start_date.id_for_label }}">Start Date</label>
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+            <div class="errorlist">{{ form.start_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.end_date.id_for_label }}">End Date</label>
+            {{ form.end_date }}
+            {% if form.end_date.errors %}
+            <div class="errorlist">{{ form.end_date.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Date Preview Cards -->
+    <div class="reservation-dates">
+        <div class="date-card start-date">
+            <h4>Pick-up Date</h4>
+            <div class="date-value">
+                {% if form.start_date.value %}
+                    {{ form.start_date.value|date:"M d, Y" }}
+                {% else %}
+                    Select date
+                {% endif %}
+            </div>
+            <div class="date-info">Start of reservation</div>
+        </div>
+        
+        <div class="date-card end-date">
+            <h4>Return Date</h4>
+            <div class="date-value">
+                {% if form.end_date.value %}
+                    {{ form.end_date.value|date:"M d, Y" }}
+                {% else %}
+                    Select date
+                {% endif %}
+            </div>
+            <div class="date-info">End of reservation</div>
+        </div>
+    </div>
+    
+    <!-- Duration Card -->
+    <div class="date-card duration" style="grid-column: 1 / -1; margin-top: 1rem;">
+        <h4>Rental Duration</h4>
+        <div class="date-value" id="duration-display">
+            {{ duration }}
+        </div>
+        <div class="date-info">Total rental period</div>
+    </div>
+    
+    <!-- Availability Check -->
+    <div class="availability-check" id="availability-check-container" style="display: none;">
+        <i class="fas fa-question-circle"></i>
+        <div>
+            <strong>Availability Check</strong>
+            <p>Select car and dates to check availability</p>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Settings Section -->
+<div class="form-section">
+    <h3><i class="fas fa-cogs"></i> Reservation Settings</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label>Reservation Status</label>
+            {{ form.reservation_status }}
+            {% if form.reservation_status.errors %}
+            <div class="errorlist">{{ form.reservation_status.errors }}</div>
+            {% endif %}
+            
+            {% if form.reservation_status.value %}
+            <div class="reservation-status {{ form.reservation_status.value|lower }}">
+                <i class="fas fa-{% if form.reservation_status.value == 'approved' %}check-circle{% elif form.reservation_status.value == 'pending' %}clock{% else %}times-circle{% endif %}"></i>
+                {{ form.reservation_status.value|title }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.deposit_amount.id_for_label }}">Deposit Amount (₵)</label>
+            {{ form.deposit_amount }}
+            {% if form.deposit_amount.errors %}
+            <div class="errorlist">{{ form.deposit_amount.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.special_requests.id_for_label }}">Special Requests</label>
+        {{ form.special_requests }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Any special requirements or requests from the customer
+        </div>
+        {% if form.special_requests.errors %}
+        <div class="errorlist">{{ form.special_requests.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.additional_equipment.id_for_label }}">Additional Equipment</label>
+        <div class="equipment-checklist">
+            <div class="equipment-item" data-value="gps" onclick="toggleEquipment(this)">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>GPS Navigation</span>
+            </div>
+            <div class="equipment-item" data-value="child_seat" onclick="toggleEquipment(this)">
+                <i class="fas fa-child"></i>
+                <span>Child Seat</span>
+            </div>
+            <div class="equipment-item" data-value="roof_rack" onclick="toggleEquipment(this)">
+                <i class="fas fa-car"></i>
+                <span>Roof Rack</span>
+            </div>
+            <div class="equipment-item" data-value="snow_chains" onclick="toggleEquipment(this)">
+                <i class="fas fa-snowflake"></i>
+                <span>Snow Chains</span>
+            </div>
+            <div class="equipment-item" data-value="tow_bar" onclick="toggleEquipment(this)">
+                <i class="fas fa-link"></i>
+                <span>Tow Bar</span>
+            </div>
+            <div class="equipment-item" data-value="other" onclick="toggleEquipment(this)">
+                <i class="fas fa-plus"></i>
+                <span>Other</span>
+            </div>
+        </div>
+        {{ form.additional_equipment }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Select additional equipment needed for this reservation
+        </div>
+        {% if form.additional_equipment.errors %}
+        <div class="errorlist">{{ form.additional_equipment.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estimated Cost Section -->
+<div class="form-section">
+    <h3><i class="fas fa-calculator"></i> Estimated Cost</h3>
+    
+    <div class="calculation-grid">
+        <div class="calculation-item">
+            <div class="label">Daily Rate</div>
+            <div class="value currency" id="daily-rate">₵0.00</div>
+        </div>
+        <div class="calculation-item">
+            <div class="label">Rental Days</div>
+            <div class="value" id="rental-days">0</div>
+        </div>
+        <div class="calculation-item">
+            <div class="label">Base Cost</div>
+            <div class="value currency" id="base-cost">₵0.00</div>
+        </div>
+        <div class="calculation-item">
+            <div class="label">Deposit Required</div>
+            <div class="value currency" id="deposit-required">₵0.00</div>
+        </div>
+        <div class="calculation-item" style="grid-column: 1 / -1; background-color: #f0f7ff;">
+            <div class="label">Total Estimated Cost</div>
+            <div class="value currency" style="font-size: 1.5rem;" id="total-estimated">₵0.00</div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update reservation status indicator
+    const statusField = document.getElementById('id_reservation_status');
+    if (statusField) {
+        statusField.addEventListener('change', function() {
+            const statusIndicator = document.querySelector('.reservation-status');
+            if (statusIndicator) {
+                statusIndicator.className = 'reservation-status ' + this.value.toLowerCase();
+                
+                let iconClass = 'times-circle';
+                if (this.value === 'approved') {
+                    iconClass = 'check-circle';
+                } else if (this.value === 'pending') {
+                    iconClass = 'clock';
+                }
+                
+                statusIndicator.innerHTML = `
+                    <i class="fas fa-${iconClass}"></i>
+                    ${this.value.charAt(0).toUpperCase() + this.value.slice(1)}
+                `;
+            }
+        });
+        
+        // Initial setup if value exists
+        if (statusField.value) {
+            statusField.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Set minimum dates
+    const startDateField = document.getElementById('id_start_date');
+    const endDateField = document.getElementById('id_end_date');
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (startDateField) {
+        startDateField.setAttribute('min', today);
+    }
+    
+    if (endDateField && startDateField) {
+        startDateField.addEventListener('change', function() {
+            if (this.value) {
+                const minEndDate = new Date(this.value);
+                minEndDate.setDate(minEndDate.getDate() + 1);
+                endDateField.setAttribute('min', minEndDate.toISOString().split('T')[0]);
+                
+                // Update duration display
+                updateDurationDisplay();
+            }
+        });
+    }
+    
+    if (endDateField) {
+        endDateField.addEventListener('change', function() {
+            updateDurationDisplay();
+        });
+    }
+    
+    // Format deposit amount with currency symbol and update calculations
+    const depositField = document.getElementById('id_deposit_amount');
+    if (depositField) {
+        // Initialize with default value if empty
+        if (!depositField.value || depositField.value === '') {
+            depositField.value = '0.00';
+        }
+        
+        // Update calculations when deposit changes
+        depositField.addEventListener('input', function() {
+            let numericValue = parseFloat(this.value);
+            if (!isNaN(numericValue) && numericValue >= 0) {
+                updateDepositCalculation(numericValue);
+            } else {
+                updateDepositCalculation(0);
+            }
+        });
+        
+        // Also update on blur to ensure calculation is correct
+        depositField.addEventListener('blur', function() {
+            let numericValue = parseFloat(this.value);
+            if (!isNaN(numericValue) && numericValue >= 0) {
+                this.value = numericValue.toFixed(2); // Format to 2 decimal places
+                updateDepositCalculation(numericValue);
+            } else {
+                this.value = '0.00';
+                updateDepositCalculation(0);
+            }
+        });
+    }
+    
+    // Function to update deposit calculation
+    function updateDepositCalculation(depositAmount) {
+        const depositElement = document.getElementById('deposit-required');
+        if (depositElement) {
+            depositElement.textContent = '₵' + depositAmount.toFixed(2);
+        }
+    }
+    
+    // Function to update duration display
+    function updateDurationDisplay() {
+        const startDate = startDateField ? startDateField.value : null;
+        const endDate = endDateField ? endDateField.value : null;
+        const durationDisplay = document.getElementById('duration-display');
+        
+        if (startDate && endDate && durationDisplay) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            durationDisplay.textContent = diffDays + ' days';
+            
+            // Update calculation grid
+            updateCalculationGrid(diffDays);
+        }
+    }
+    
+    // Function to update calculation grid
+    function updateCalculationGrid(days) {
+        const dailyRateElement = document.getElementById('daily-rate');
+        const rentalDaysElement = document.getElementById('rental-days');
+        const baseCostElement = document.getElementById('base-cost');
+        const depositElement = document.getElementById('deposit-required');
+        const totalElement = document.getElementById('total-estimated');
+        const carSelect = document.getElementById('id_car');
+        
+        if (rentalDaysElement) {
+            rentalDaysElement.textContent = days;
+        }
+        
+        // Get daily rate from selected car
+        let dailyRate = 50; // Default rate
+        if (carSelect && carSelect.selectedOptions.length > 0) {
+            const selectedOption = carSelect.selectedOptions[0];
+            const text = selectedOption.textContent;
+            // Extract price from text like "Toyota Camry (ABC123) - ₵150.00"
+            const priceMatch = text.match(/₵(\d+(\.\d+)?)/);
+            if (priceMatch) {
+                dailyRate = parseFloat(priceMatch[1]);
+            }
+        }
+        
+        const baseCost = dailyRate * days;
+        const deposit = baseCost * 0.2; // 20% deposit
+        
+        if (dailyRateElement) {
+            dailyRateElement.textContent = '₵' + dailyRate.toFixed(2);
+        }
+        
+        if (baseCostElement) {
+            baseCostElement.textContent = '₵' + baseCost.toFixed(2);
+        }
+        
+        if (depositElement) {
+            depositElement.textContent = '₵' + deposit.toFixed(2);
+        }
+        
+        if (totalElement) {
+            totalElement.textContent = '₵' + baseCost.toFixed(2);
+        }
+    }
+    
+    // Car selection event
+    const carSelect = document.getElementById('id_car');
+    if (carSelect) {
+        carSelect.addEventListener('change', function() {
+            // Update availability check display
+            const availabilityCheck = document.getElementById('availability-check-container');
+            if (availabilityCheck && startDateField.value && endDateField.value && carSelect.value) {
+                availabilityCheck.style.display = 'flex';
+                
+                // Simulate availability check
+                const isAvailable = Math.random() > 0.3; // 70% chance available
+                
+                if (isAvailable) {
+                    availabilityCheck.innerHTML = `
+                        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                        <div>
+                            <strong>Car Available</strong>
+                            <p>Selected car is available for the chosen dates.</p>
+                        </div>
+                    `;
+                    availabilityCheck.style.borderColor = 'rgba(39, 174, 96, 0.2)';
+                    availabilityCheck.style.backgroundColor = 'rgba(39, 174, 96, 0.05)';
+                } else {
+                    availabilityCheck.innerHTML = `
+                        <i class="fas fa-times-circle" style="color: #e74c3c;"></i>
+                        <div>
+                            <strong>Car Not Available</strong>
+                            <p>Selected car is not available for the chosen dates.</p>
+                        </div>
+                    `;
+                    availabilityCheck.style.borderColor = 'rgba(231, 76, 60, 0.2)';
+                    availabilityCheck.style.backgroundColor = 'rgba(231, 76, 60, 0.05)';
+                }
+            }
+            
+            // Update calculations if dates are selected
+            if (startDateField.value && endDateField.value) {
+                const start = new Date(startDateField.value);
+                const end = new Date(endDateField.value);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                updateCalculationGrid(diffDays);
+            }
+        });
+    }
+    
+    // Initial duration calculation if dates exist
+    updateDurationDisplay();
+    
+    // Check initial availability state
+    const availabilityCheckContainer = document.getElementById('availability-check-container');
+    if (availabilityCheckContainer && carSelect && startDateField && endDateField) {
+        if (carSelect.value && startDateField.value && endDateField.value) {
+            availabilityCheckContainer.style.display = 'flex';
+        }
+    }
+});
+
+// Function to toggle equipment selection
+function toggleEquipment(element) {
+    element.classList.toggle('selected');
+    
+    // Update hidden field with selected equipment
+    const selectedEquipment = [];
+    document.querySelectorAll('.equipment-item.selected').forEach(option => {
+        selectedEquipment.push(option.dataset.value);
+    });
+    
+    const equipmentField = document.getElementById('id_additional_equipment');
+    if (equipmentField) {
+        equipmentField.value = selectedEquipment.join(', ');
+    }
+}
+
+// Initialize equipment selection on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial equipment selection based on field value
+    const equipmentField = document.getElementById('id_additional_equipment');
+    if (equipmentField && equipmentField.value) {
+        const selectedValues = equipmentField.value.split(', ').map(v => v.trim());
+        document.querySelectorAll('.equipment-item').forEach(option => {
+            if (selectedValues.includes(option.dataset.value)) {
+                option.classList.add('selected');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

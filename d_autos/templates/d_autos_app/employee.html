@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<!-- ================= EMPLOYEES PAGE ================= -->
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-car"></i> Car Rental System
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <ul class="nav-links">
+        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'customer_list' %}">Customers</a></li>
+        <li><a href="{% url 'car_list' %}">Cars</a></li>
+        <li><a href="{% url 'rental_list' %}">Rentals</a></li>
+        <li><a href="{% url 'payment_list' %}">Payments</a></li>
+        <li><a href="{% url 'reservation_list' %}">Reservations</a></li>
+        <li><a href="{% url 'maintenance_list' %}">Maintenance</a></li>
+        <li><a href="{% url 'employee_list' %}" class="active">Employees</a></li>
+    </ul>
+</nav>
+
+<div class="page-header">
+    <h2>Employees</h2>
+    <div class="page-actions">
+        <a href="{% url 'employee_add' %}" class="btn primary">➕ Add Employee</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee.user.first_name }} {{ employee.user.last_name }}</td>
+                <td>{{ employee.role }}</td>
+                <td>{{ employee.phone }}</td>
+                <td>{{ employee.user.email }}</td>
+                <td class="actions">
+                    <a href="{% url 'employee_edit' pk=employee.pk %}">✏ Edit</a>
+                    <a href="{% url 'employee_delete' pk=employee.pk %}">🗑 Delete</a>
+                    <a href="{% url 'employee_reset_password' pk=employee.pk %}" onclick="return confirm('This will generate a new password for {{ employee.user.first_name }}. Continue?')" class="btn small warning">🔑 Reset Password</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No employees yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

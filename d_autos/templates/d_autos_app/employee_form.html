@@ -1,0 +1,267 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Employee Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-user-tie"></i>
+    {% if object %}Edit Employee - {{ object.first_name }} {{ object.last_name }}{% else %}Add New Employee{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Personal Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+            <div class="errorlist">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+            <div class="errorlist">{{ form.last_name.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.email.id_for_label }}">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="errorlist">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+            <div class="errorlist">{{ form.phone.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+            <input type="date" name="date_of_birth" id="id_date_of_birth" class="form-control" disabled>
+            <small class="form-text text-muted">Date of birth is managed in user profile</small>
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.national_id.id_for_label }}">National ID</label>
+            <input type="text" name="national_id" id="id_national_id" class="form-control" placeholder="National ID (optional)" disabled>
+            <small class="form-text text-muted">National ID is managed in user profile</small>
+        </div>
+    </div>
+</div>
+
+<!-- Employment Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-briefcase"></i> Employment Details</h3>
+    
+    <div class="form-group">
+        <label>Employee Role</label>
+        <input type="hidden" name="role" id="id_role" value="{{ form.role.value|default:'sales_agent' }}">
+        
+        <div class="employee-role-selection">
+            <div class="employee-role" data-value="manager">
+                <i class="fas fa-user-tie"></i>
+                <span>Manager</span>
+            </div>
+            <div class="employee-role" data-value="sales_agent">
+                <i class="fas fa-user"></i>
+                <span>Sales Agent</span>
+            </div>
+            <div class="employee-role" data-value="mechanic">
+                <i class="fas fa-wrench"></i>
+                <span>Mechanic</span>
+            </div>
+            <div class="employee-role" data-value="admin">
+                <i class="fas fa-cog"></i>
+                <span>Administrator</span>
+            </div>
+        </div>
+        {% if form.role.errors %}
+        <div class="errorlist">{{ form.role.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.hire_date.id_for_label }}">Hire Date</label>
+            {{ form.hire_date }}
+            {% if form.hire_date.errors %}
+            <div class="errorlist">{{ form.hire_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.salary.id_for_label }}">Monthly Salary (₵)</label>
+            {{ form.salary }}
+            {% if form.salary.errors %}
+            <div class="errorlist">{{ form.salary.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Role-specific fields -->
+    <div class="manager-field" style="display: none;">
+        <div class="form-group">
+            <label for="{{ form.department.id_for_label }}">Department</label>
+            {{ form.department }}
+            {% if form.department.errors %}
+            <div class="errorlist">{{ form.department.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Contact & Emergency Section -->
+<div class="form-section">
+    <h3><i class="fas fa-address-book"></i> Contact & Emergency Information</h3>
+    
+    <div class="form-group">
+        <label for="{{ form.address.id_for_label }}">Home Address</label>
+        {{ form.address }}
+        {% if form.address.errors %}
+        <div class="errorlist">{{ form.address.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.emergency_contact.id_for_label }}">Emergency Contact Name</label>
+            {{ form.emergency_contact }}
+            {% if form.emergency_contact.errors %}
+            <div class="errorlist">{{ form.emergency_contact.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.emergency_phone.id_for_label }}">Emergency Contact Phone</label>
+            {{ form.emergency_phone }}
+            {% if form.emergency_phone.errors %}
+            <div class="errorlist">{{ form.emergency_phone.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Employee role selection
+    const roleOptions = document.querySelectorAll('.employee-role');
+    const roleInput = document.getElementById('id_role');
+    
+    roleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            roleOptions.forEach(opt => opt.classList.remove('selected'));
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            // Update hidden input value
+            roleInput.value = this.dataset.value;
+            
+            // Show/hide role-specific fields
+            const managerField = document.querySelector('.manager-field');
+            if (managerField) {
+                managerField.style.display = this.dataset.value === 'manager' ? 'block' : 'none';
+            }
+        });
+    });
+    
+    // Set initial selection
+    if (roleInput && roleInput.value) {
+        const selectedOption = document.querySelector(`.employee-role[data-value="${roleInput.value}"]`);
+        if (selectedOption) {
+            selectedOption.classList.add('selected');
+            // Show role-specific fields if manager
+            const managerField = document.querySelector('.manager-field');
+            if (managerField && roleInput.value === 'manager') {
+                managerField.style.display = 'block';
+            }
+        }
+    } else {
+        // Default to sales_agent
+        const defaultOption = document.querySelector('.employee-role[data-value="sales_agent"]');
+        if (defaultOption) {
+            defaultOption.classList.add('selected');
+        }
+    }
+    
+    // Format salary with currency symbol
+    const salaryField = document.getElementById('id_salary');
+    if (salaryField) {
+        // Remove currency symbol before form submission to ensure proper validation
+        salaryField.addEventListener('input', function() {
+            // Allow only numbers and decimal point
+            this.value = this.value.replace(/[^0-9.]/g, '');
+        });
+        
+        // Optional: Add currency symbol for display on blur (but remove on focus for editing)
+        salaryField.addEventListener('blur', function() {
+            if (this.value && !isNaN(this.value)) {
+                // Just ensure it's a valid number, don't add currency symbol
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+        
+        salaryField.addEventListener('focus', function() {
+            // Remove any formatting when user starts editing
+            if (this.value) {
+                this.value = this.value.replace(/[^0-9.]/g, '');
+            }
+        });
+    }
+    
+    // Auto-format phone numbers
+    const phoneFields = document.querySelectorAll('input[name*="phone"], input[name*="Phone"]');
+    phoneFields.forEach(field => {
+        field.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 3 && value.length <= 6) {
+                value = value.replace(/(\d{3})(\d+)/, '($1) $2');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d+)/, '($1) $2-$3');
+            }
+            
+            e.target.value = value;
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block after_form %}
+{% if credentials_data %}
+<div class="credentials-display" style="margin-top: 20px; padding: 20px; background-color: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px;">
+    <h3 style="color: #2e7d32; margin-top: 0;"><i class="fas fa-key"></i> Employee Login Credentials Generated</h3>
+    <div style="background-color: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+        <p><strong>Employee Name:</strong> {{ credentials_data.name }}</p>
+        <p><strong>Login Email:</strong> {{ credentials_data.email }}</p>
+        <p><strong>Generated Password:</strong> <span style="font-family: monospace; font-size: 1.1em; color: #d32f2f; font-weight: bold;">{{ credentials_data.password }}</span></p>
+        <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
+            <strong>⚠️ Important:</strong> Please save these credentials securely. The employee will need them to log in to the system.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

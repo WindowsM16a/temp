@@ -1,0 +1,366 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Maintenance Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-tools"></i>
+    {% if object %}Edit Maintenance - {{ object.title }}{% else %}Schedule New Maintenance{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Basic Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.car.id_for_label }}">Car</label>
+            {{ form.car }}
+            {% if form.car.errors %}
+            <div class="errorlist">{{ form.car.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.service_type.id_for_label }}">Service Type</label>
+            {{ form.service_type }}
+            {% if form.service_type.errors %}
+            <div class="errorlist">{{ form.service_type.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.title.id_for_label }}">Maintenance Title</label>
+        {{ form.title }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Brief description of the maintenance work
+        </div>
+        {% if form.title.errors %}
+        <div class="errorlist">{{ form.title.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Scheduling & Status Section -->
+<div class="form-section">
+    <h3><i class="fas fa-calendar-alt"></i> Scheduling & Status</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.scheduled_date.id_for_label }}">Scheduled Date</label>
+            {{ form.scheduled_date }}
+            {% if form.scheduled_date.errors %}
+            <div class="errorlist">{{ form.scheduled_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.status.id_for_label }}">Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+            <div class="errorlist">{{ form.status.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.priority.id_for_label }}">Priority Level</label>
+            {{ form.priority }}
+            {% if form.priority.errors %}
+            <div class="errorlist">{{ form.priority.errors }}</div>
+            {% endif %}
+        </div>
+
+        {% if object %}
+        <div class="form-group half">
+            <label for="{{ form.completed_date.id_for_label }}">Completed Date</label>
+            {{ form.completed_date }}
+            {% if form.completed_date.errors %}
+            <div class="errorlist">{{ form.completed_date.errors }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Assignment Section -->
+<div class="form-section">
+    <h3><i class="fas fa-user-cog"></i> Assignment</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.employee.id_for_label }}">Assigned Mechanic</label>
+            {{ form.employee }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                Select a mechanic or technician for this maintenance
+            </div>
+            {% if form.employee.errors %}
+            <div class="errorlist">{{ form.employee.errors }}</div>
+            {% endif %}
+        </div>
+
+        {% if form.approved_by %}
+        <div class="form-group half">
+            <label for="{{ form.approved_by.id_for_label }}">Approved By</label>
+            {{ form.approved_by }}
+            {% if form.approved_by.errors %}
+            <div class="errorlist">{{ form.approved_by.errors }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if object %}
+    <div class="form-group">
+        <label for="{{ form.approval_date.id_for_label }}">Approval Date</label>
+        {{ form.approval_date }}
+        {% if form.approval_date.errors %}
+        <div class="errorlist">{{ form.approval_date.errors }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Cost Information Section -->
+<div class="form-section">
+    <h3><i class="fas fa-dollar-sign"></i> Cost Information</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.cost.id_for_label }}">Total Cost (₵)</label>
+            {{ form.cost }}
+            {% if form.cost.errors %}
+            <div class="errorlist">{{ form.cost.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.labor_cost.id_for_label }}">Labor Cost (₵)</label>
+            {{ form.labor_cost }}
+            {% if form.labor_cost.errors %}
+            <div class="errorlist">{{ form.labor_cost.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.parts_cost.id_for_label }}">Parts Cost (₵)</label>
+            {{ form.parts_cost }}
+            {% if form.parts_cost.errors %}
+            <div class="errorlist">{{ form.parts_cost.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.tax_amount.id_for_label }}">Tax Amount (₵)</label>
+            {{ form.tax_amount }}
+            {% if form.tax_amount.errors %}
+            <div class="errorlist">{{ form.tax_amount.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Parts & Materials Section -->
+<div class="form-section">
+    <h3><i class="fas fa-cogs"></i> Parts & Materials</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.parts_used.id_for_label }}">Parts Used</label>
+            {{ form.parts_used }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                List parts used (one per line or comma-separated)
+            </div>
+            {% if form.parts_used.errors %}
+            <div class="errorlist">{{ form.parts_used.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.parts_quantity.id_for_label }}">Parts Quantity</label>
+            {{ form.parts_quantity }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                Quantity for each part listed above
+            </div>
+            {% if form.parts_quantity.errors %}
+            <div class="errorlist">{{ form.parts_quantity.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Description & Notes Section -->
+<div class="form-section">
+    <h3><i class="fas fa-file-alt"></i> Description & Notes</h3>
+
+    <div class="form-group">
+        <label for="{{ form.description.id_for_label }}">Detailed Description</label>
+        {{ form.description }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Detailed description of the maintenance work performed
+        </div>
+        {% if form.description.errors %}
+        <div class="errorlist">{{ form.description.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.notes.id_for_label }}">Additional Notes</label>
+        {{ form.notes }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Any additional notes, recommendations, or special instructions
+        </div>
+        {% if form.notes.errors %}
+        <div class="errorlist">{{ form.notes.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Mileage & Warranty Section -->
+<div class="form-section">
+    <h3><i class="fas fa-tachometer-alt"></i> Mileage & Warranty</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.mileage_at_service.id_for_label }}">Mileage at Service (km)</label>
+            {{ form.mileage_at_service }}
+            {% if form.mileage_at_service.errors %}
+            <div class="errorlist">{{ form.mileage_at_service.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.warranty_period.id_for_label }}">Warranty Period (days)</label>
+            {{ form.warranty_period }}
+            {% if form.warranty_period.errors %}
+            <div class="errorlist">{{ form.warranty_period.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if object %}
+    <div class="form-group">
+        <label for="{{ form.warranty_expiry_date.id_for_label }}">Warranty Expiry Date</label>
+        {{ form.warranty_expiry_date }}
+        {% if form.warranty_expiry_date.errors %}
+        <div class="errorlist">{{ form.warranty_expiry_date.errors }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Next Service Recommendation Section -->
+<div class="form-section">
+    <h3><i class="fas fa-calendar-check"></i> Next Service Recommendation</h3>
+
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.next_service_date.id_for_label }}">Next Service Date</label>
+            {{ form.next_service_date }}
+            {% if form.next_service_date.errors %}
+            <div class="errorlist">{{ form.next_service_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group half">
+            <label for="{{ form.next_service_mileage.id_for_label }}">Next Service Mileage (km)</label>
+            {{ form.next_service_mileage }}
+            {% if form.next_service_mileage.errors %}
+            <div class="errorlist">{{ form.next_service_mileage.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate total cost when labor, parts, or tax changes
+    function updateTotalCost() {
+        const laborCost = parseFloat(document.getElementById('id_labor_cost')?.value) || 0;
+        const partsCost = parseFloat(document.getElementById('id_parts_cost')?.value) || 0;
+        const taxAmount = parseFloat(document.getElementById('id_tax_amount')?.value) || 0;
+        const totalCost = laborCost + partsCost + taxAmount;
+
+        const totalField = document.getElementById('id_cost');
+        if (totalField && totalCost > 0) {
+            totalField.value = totalCost.toFixed(2);
+        }
+    }
+
+    // Add event listeners for cost calculation
+    ['id_labor_cost', 'id_parts_cost', 'id_tax_amount'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', updateTotalCost);
+        }
+    });
+
+    // Status change handler
+    const statusField = document.getElementById('id_status');
+    const completedDateField = document.getElementById('id_completed_date');
+
+    if (statusField && completedDateField) {
+        statusField.addEventListener('change', function() {
+            if (this.value === 'completed' && !completedDateField.value) {
+                const today = new Date().toISOString().split('T')[0];
+                completedDateField.value = today;
+            }
+        });
+    }
+
+    // Service type change handler for next service recommendations
+    const serviceTypeField = document.getElementById('id_service_type');
+    const nextServiceDateField = document.getElementById('id_next_service_date');
+    const nextServiceMileageField = document.getElementById('id_next_service_mileage');
+
+    if (serviceTypeField) {
+        serviceTypeField.addEventListener('change', function() {
+            const scheduledDate = document.getElementById('id_scheduled_date')?.value;
+            const mileage = document.getElementById('id_mileage_at_service')?.value;
+
+            if (scheduledDate) {
+                const date = new Date(scheduledDate);
+                let nextDate, nextMileage;
+
+                // Set default next service based on service type
+                if (['oil_change', 'tire_rotation', 'general_service'].includes(this.value)) {
+                    nextDate = new Date(date);
+                    nextDate.setMonth(nextDate.getMonth() + 6); // 6 months
+                    nextMileage = mileage ? parseInt(mileage) + 5000 : '';
+                } else {
+                    nextDate = new Date(date);
+                    nextDate.setFullYear(nextDate.getFullYear() + 1); // 1 year
+                    nextMileage = mileage ? parseInt(mileage) + 10000 : '';
+                }
+
+                if (nextServiceDateField && !nextServiceDateField.value) {
+                    nextServiceDateField.value = nextDate.toISOString().split('T')[0];
+                }
+                if (nextServiceMileageField && !nextServiceMileageField.value && nextMileage) {
+                    nextServiceMileageField.value = nextMileage;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

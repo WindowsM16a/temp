@@ -1,0 +1,423 @@
+{% extends 'base_form.html' %}
+{% load static %}
+
+{% block title %}Rental Form - Car Rental System{% endblock %}
+
+{% block form_title %}
+    <i class="fas fa-receipt"></i>
+    {% if object %}Edit Rental - #{{ object.id }}{% else %}Create New Rental{% endif %}
+{% endblock %}
+
+{% block back_url %}{% url 'dashboard' %}{% endblock %}
+{% block cancel_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block form_content %}
+<!-- Rental Details Section -->
+<div class="form-section">
+    <h3><i class="fas fa-info-circle"></i> Rental Details</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.customer.id_for_label }}">Customer</label>
+            {{ form.customer }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                Ensure customer has a valid driver's license
+            </div>
+            {% if form.customer.errors %}
+            <div class="errorlist">{{ form.customer.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.car.id_for_label }}">Car</label>
+            {{ form.car }}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                Check car availability before assigning
+            </div>
+            {% if form.car.errors %}
+            <div class="errorlist">{{ form.car.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="reservation-dates">
+        <div class="form-group">
+            <label for="{{ form.rental_date.id_for_label }}">Rental Start Date</label>
+            {{ form.rental_date }}
+            {% if form.rental_date.errors %}
+            <div class="errorlist">{{ form.rental_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.return_date.id_for_label }}">Scheduled Return Date</label>
+            {{ form.return_date }}
+            {% if form.return_date.errors %}
+            <div class="errorlist">{{ form.return_date.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Date Preview Cards -->
+    <div class="reservation-dates">
+        <div class="date-card">
+            <h4>Rental Start</h4>
+            <div class="date-value">{% if form.rental_date.value %}{{ form.rental_date.value|date:"M d, Y" }}{% else %}Select date{% endif %}</div>
+            <div class="date-info">Pick-up date</div>
+        </div>
+        
+        <div class="date-card">
+            <h4>Scheduled Return</h4>
+            <div class="date-value">{% if form.return_date.value %}{{ form.return_date.value|date:"M d, Y" }}{% else %}Select date{% endif %}</div>
+            <div class="date-info">Expected return date</div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Equipment Section -->
+<div class="form-section">
+    <h3><i class="fas fa-toolbox"></i> Additional Equipment</h3>
+    
+    <div class="equipment-checklist">
+        <div class="equipment-item" data-cost="10">
+            <input type="checkbox" name="equipment_gps" id="id_equipment_gps" {% if object.equipment_gps %}checked{% endif %} style="display: none;">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>GPS Navigation (+₵10/day)</span>
+        </div>
+        
+        <div class="equipment-item" data-cost="5">
+            <input type="checkbox" name="equipment_child_seat" id="id_equipment_child_seat" {% if object.equipment_child_seat %}checked{% endif %} style="display: none;">
+            <i class="fas fa-child"></i>
+            <span>Child Seat (+₵5/day)</span>
+        </div>
+        
+        <div class="equipment-item" data-cost="8">
+            <input type="checkbox" name="equipment_roof_rack" id="id_equipment_roof_rack" {% if object.equipment_roof_rack %}checked{% endif %} style="display: none;">
+            <i class="fas fa-car"></i>
+            <span>Roof Rack (+₵8/day)</span>
+        </div>
+        
+        <div class="equipment-item" data-cost="15">
+            <input type="checkbox" name="equipment_premium_insurance" id="id_equipment_premium_insurance" {% if object.equipment_premium_insurance %}checked{% endif %} style="display: none;">
+            <i class="fas fa-shield-alt"></i>
+            <span>Premium Insurance (+₵15/day)</span>
+        </div>
+        
+        <div class="equipment-item" data-cost="20">
+            <input type="checkbox" name="equipment_driver" id="id_equipment_driver" {% if object.equipment_driver %}checked{% endif %} style="display: none;">
+            <i class="fas fa-user-tie"></i>
+            <span>Additional Driver (+₵20/day)</span>
+        </div>
+        
+        <div class="equipment-item" data-cost="12">
+            <input type="checkbox" name="equipment_wifi" id="id_equipment_wifi" {% if object.equipment_wifi %}checked{% endif %} style="display: none;">
+            <i class="fas fa-wifi"></i>
+            <span>Mobile WiFi (+₵12/day)</span>
+        </div>
+    </div>
+    
+    <div style="margin-top: 1rem;">
+        <strong>Total Equipment Cost:</strong>
+        <span id="equipment-cost" style="color: var(--success); font-weight: bold;">₵0.00/day</span>
+    </div>
+</div>
+
+<!-- Cost & Payment Section -->
+<div class="form-section">
+    <h3><i class="fas fa-dollar-sign"></i> Cost & Payment</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.total_cost.id_for_label }}">Total Cost (₵)</label>
+            {{ form.total_cost }}
+            {% if form.total_cost.errors %}
+            <div class="errorlist">{{ form.total_cost.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.deposit_paid.id_for_label }}">Deposit Paid (₵)</label>
+            {{ form.deposit_paid }}
+            {% if form.deposit_paid.errors %}
+            <div class="errorlist">{{ form.deposit_paid.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="{{ form.payment_status.id_for_label }}">Payment Status</label>
+            {{ form.payment_status }}
+            {% if form.payment_status.errors %}
+            <div class="errorlist">{{ form.payment_status.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.payment_method.id_for_label }}">Payment Method</label>
+            {{ form.payment_method }}
+            {% if form.payment_method.errors %}
+            <div class="errorlist">{{ form.payment_method.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Rental Status Section -->
+<div class="form-section">
+    <h3><i class="fas fa-tasks"></i> Rental Status</h3>
+    
+    <div class="form-row">
+        <div class="form-group half">
+            <label>Rental Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+            <div class="errorlist">{{ form.status.errors }}</div>
+            {% endif %}
+            
+            {% if form.status.value %}
+            <div class="rental-status {{ form.status.value|lower }}">
+                <i class="fas fa-{% if form.status.value == 'active' %}play-circle{% elif form.status.value == 'completed' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ form.status.value|title }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group half">
+            <label for="{{ form.actual_return_date.id_for_label }}">Actual Return Date</label>
+            {{ form.actual_return_date }}
+            {% if form.actual_return_date.errors %}
+            <div class="errorlist">{{ form.actual_return_date.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Late Fee Warning -->
+    <div class="late-fee-warning" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>Late Return Detected</strong>
+            <p>Return date has passed. Late fees may apply.</p>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.notes.id_for_label }}">Rental Notes</label>
+        {{ form.notes }}
+        <div class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Add any special notes about this rental (damage reports, fuel level, mileage, etc.)
+        </div>
+        {% if form.notes.errors %}
+        <div class="errorlist">{{ form.notes.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Rental Cost Calculator -->
+<div class="rental-calculator">
+    <h4><i class="fas fa-calculator"></i> Rental Cost Calculator</h4>
+    <p>Select car and dates to calculate rental cost</p>
+</div>
+<div class="cost-summary" style="background-color: #f0f7ff; padding: 20px; border-radius: 8px; margin-top: 20px; display: none;">
+    <h4 style="margin-top: 0; color: #2c3e50;">Cost Breakdown</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+        <div>
+            <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">Base Rental Cost</div>
+            <div style="font-size: 1.3rem; font-weight: bold; color: #2c3e50;" id="base-cost-display">₵0.00</div>
+        </div>
+        <div>
+            <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">Equipment Cost</div>
+            <div style="font-size: 1.3rem; font-weight: bold; color: #27ae60;" id="equipment-cost-display">₵0.00</div>
+        </div>
+    </div>
+    <div style="border-top: 2px solid #3498db; margin-top: 15px; padding-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 1.1rem;">Total Rental Cost:</strong>
+            <strong style="font-size: 1.5rem; color: #e74c3c;" id="total-cost-display">₵0.00</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden fields (if any) -->
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<script>
+// Function to update total cost based on rental dates, car, and equipment
+function updateTotalCost() {
+    const rentalDate = document.getElementById('id_rental_date').value;
+    const returnDate = document.getElementById('id_return_date').value;
+    const carSelect = document.getElementById('id_car');
+    
+    if (rentalDate && returnDate && carSelect.value) {
+        const start = new Date(rentalDate);
+        const end = new Date(returnDate);
+        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        
+        if (days > 0) {
+            // Get car price from selected car option text
+            let dailyRate = 50; // Default fallback
+            const selectedOption = carSelect.selectedOptions[0];
+            if (selectedOption) {
+                const text = selectedOption.textContent;
+                // Extract price from text like "Toyota Camry (ABC123) - ₵150.00"
+                const priceMatch = text.match(/₵([\d,.]+)/);
+                if (priceMatch) {
+                    dailyRate = parseFloat(priceMatch[1].replace(/,/g, ''));
+                }
+            }
+            
+            const baseCost = dailyRate * days;
+            
+            // Calculate daily equipment cost (for display)
+            let dailyEquipmentCost = 0;
+            document.querySelectorAll('.equipment-item.selected').forEach(item => {
+                dailyEquipmentCost += parseFloat(item.dataset.cost);
+            });
+            
+            // Add equipment cost for the rental period
+            let equipmentCost = dailyEquipmentCost * days;
+            
+            const totalCost = baseCost + equipmentCost;
+            
+            // Update total cost field - store numeric value for form submission
+            const totalCostField = document.getElementById('id_total_cost');
+            if (totalCostField) {
+                totalCostField.value = totalCost.toFixed(2);
+            }
+            
+            // Update daily equipment cost display
+            const equipmentCostElement = document.getElementById('equipment-cost');
+            if (equipmentCostElement) {
+                equipmentCostElement.textContent = '₵' + dailyEquipmentCost.toFixed(2) + '/day';
+            }
+            
+            // Update cost summary display
+            const baseCostDisplay = document.getElementById('base-cost-display');
+            const equipmentCostDisplay = document.getElementById('equipment-cost-display');
+            const totalCostDisplay = document.getElementById('total-cost-display');
+            const costSummary = document.querySelector('.cost-summary');
+            
+            if (baseCostDisplay) baseCostDisplay.textContent = '₵' + baseCost.toFixed(2);
+            if (equipmentCostDisplay) equipmentCostDisplay.textContent = '₵' + equipmentCost.toFixed(2);
+            if (totalCostDisplay) totalCostDisplay.textContent = '₵' + totalCost.toFixed(2);
+            if (costSummary) costSummary.style.display = 'block';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Format currency fields
+    const currencyFields = ['total_cost', 'deposit_paid'].map(id => document.getElementById(`id_${id}`));
+    currencyFields.forEach(field => {
+        if (field && field.value && !field.value.toString().startsWith('₵')) {
+            field.value = parseFloat(field.value).toFixed(2);
+        }
+    });
+    
+    // Update rental status indicator
+    const statusField = document.getElementById('id_status');
+    if (statusField) {
+        statusField.addEventListener('change', function() {
+            const statusIndicator = document.querySelector('.rental-status');
+            if (statusIndicator) {
+                statusIndicator.className = `rental-status ${this.value}`;
+                statusIndicator.innerHTML = `
+                    <i class="fas fa-${this.value === 'active' ? 'play-circle' : this.value === 'completed' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    ${this.value.charAt(0).toUpperCase() + this.value.slice(1)}
+                `;
+                
+                // Show/hide actual return date based on status
+                const actualReturnField = document.getElementById('id_actual_return_date').parentElement;
+                if (this.value === 'completed' || this.value === 'overdue') {
+                    actualReturnField.style.display = 'block';
+                    
+                    // Set default actual return date to today if not set
+                    const actualReturnInput = document.getElementById('id_actual_return_date');
+                    if (!actualReturnInput.value) {
+                        const today = new Date().toISOString().split('T')[0];
+                        actualReturnInput.value = today;
+                    }
+                } else {
+                    actualReturnField.style.display = 'none';
+                }
+            }
+        });
+        
+        // Initial setup
+        if (statusField.value) {
+            statusField.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Set minimum rental date to today
+    const rentalDateField = document.getElementById('id_rental_date');
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (rentalDateField) {
+        rentalDateField.setAttribute('min', today);
+    }
+    
+    // Ensure return date is after rental date
+    const returnDateField = document.getElementById('id_return_date');
+    if (rentalDateField && returnDateField) {
+        rentalDateField.addEventListener('change', function() {
+            if (this.value) {
+                const minReturnDate = new Date(this.value);
+                minReturnDate.setDate(minReturnDate.getDate() + 1);
+                returnDateField.setAttribute('min', minReturnDate.toISOString().split('T')[0]);
+                updateTotalCost();
+            }
+        });
+        
+        returnDateField.addEventListener('change', function() {
+            updateTotalCost();
+        });
+    }
+    
+    // Car selection change
+    const carSelect = document.getElementById('id_car');
+    if (carSelect) {
+        carSelect.addEventListener('change', function() {
+            updateTotalCost();
+        });
+    }
+    
+    // Equipment selection functionality
+    const equipmentItems = document.querySelectorAll('.equipment-item');
+    
+    // Initialize equipment state from checkboxes
+    equipmentItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            item.classList.add('selected');
+        }
+    });
+    
+    // Add click handlers to equipment items
+    equipmentItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Toggle selected class
+            this.classList.toggle('selected');
+            
+            // Toggle checkbox state
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+            
+            // Update total cost
+            updateTotalCost();
+        });
+    });
+    
+    // Initialize total cost on page load
+    updateTotalCost();
+});
+</script>
+{% endblock %}

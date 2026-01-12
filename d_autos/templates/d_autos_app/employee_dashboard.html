@@ -1,0 +1,724 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard - Car Rental System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-car"></i> Car Rental System - Employee
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <ul class="nav-links">
+        <li class="back-button" style="display: none;">
+            <a href="#" onclick="showFullNavbar(); return false;">
+               <i class="fas fa-arrow-left"></i>
+               <span>Back</span>
+            </a>
+        </li>
+        <li class="nav-item dashboard-item">
+            <a href="#" onclick="showTable('dashboard'); return false;"
+               class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+               <i class="fas fa-tachometer-alt"></i>
+               <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="dropdown nav-item fleet-dropdown">
+            <a href="#" class="dropdown-toggle">
+               <i class="fas fa-car"></i>
+               <span>Fleet</span>
+               <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="#" onclick="showTable('customers'); return false;">
+                       <i class="fas fa-users"></i>
+                       <span>Customers</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showTable('cars'); return false;">
+                       <i class="fas fa-car"></i>
+                       <span>Cars</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="dropdown nav-item operations-dropdown">
+            <a href="#" class="dropdown-toggle">
+               <i class="fas fa-receipt"></i>
+               <span>Operations</span>
+               <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="#" onclick="showTable('rentals'); return false;">
+                       <i class="fas fa-receipt"></i>
+                       <span>Rentals</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showTable('payments'); return false;">
+                       <i class="fas fa-credit-card"></i>
+                       <span>Payments</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="dropdown nav-item services-dropdown">
+            <a href="#" class="dropdown-toggle">
+               <i class="fas fa-wrench"></i>
+               <span>Services</span>
+               <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="#" onclick="showTable('maintenance'); return false;">
+                       <i class="fas fa-wrench"></i>
+                       <span>Maintenance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showTable('reservations'); return false;">
+                       <i class="fas fa-calendar-check"></i>
+                       <span>Reservations</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item logout-item">
+            <a href="{% url 'logout' %}">
+               <i class="fas fa-sign-out-alt"></i>
+               <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- ================= EMPLOYEE INFO ================= -->
+<div id="dashboard-view">
+<section class="quick-actions" id="quick-actions-section">
+    <div class="card employee-info-card">
+        <h3>Welcome, {{ employee.user.first_name }} {{ employee.user.last_name }}</h3>
+        <p>Role: {{ employee.get_role_display }}</p>
+        <p>Employee ID: {{ employee.employee_id }}</p>
+    </div>
+</section>
+
+<!-- ================= SUMMARY CARDS ================= -->
+<section class="cards" id="cards-section">
+    <div class="card">
+        <i class="fas fa-users card-icon"></i>
+        <h3><i class="fas fa-users"></i> Customers</h3>
+        <p>{{ total_customers }}</p>
+        <div class="trend up">
+            <i class="fas fa-arrow-up"></i> From last month
+        </div>
+    </div>
+    <div class="card">
+        <i class="fas fa-car card-icon"></i>
+        <h3><i class="fas fa-car"></i> Cars</h3>
+        <p>{{ total_cars }}</p>
+        <div class="trend up">
+            <i class="fas fa-arrow-up"></i> From last month
+        </div>
+    </div>
+    <div class="card">
+        <i class="fas fa-receipt card-icon"></i>
+        <h3><i class="fas fa-receipt"></i> Rentals</h3>
+        <p>{{ total_rentals }}</p>
+        <div class="trend up">
+            <i class="fas fa-arrow-up"></i> From last month
+        </div>
+    </div>
+</section>
+
+<!-- ================= RECENT ITEMS ================= -->
+<div class="dashboard-container" id="dashboard-container">
+    <div class="main-content">
+        <!-- ================= RECENT CUSTOMERS ================= -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Recent Customers</h2>
+                <a href="#" onclick="showTable('customers'); return false;" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>License</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+                            <td>{{ customer.license_number }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.email }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= AVAILABLE CARS ================= -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-car"></i> Available Cars</h2>
+                <a href="#" onclick="showTable('cars'); return false;" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Car</th>
+                            <th>Plate</th>
+                            <th>Price/Day</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for car in cars %}
+                        <tr>
+                            <td>{{ car.brand }} {{ car.model }} {{ car.year }}</td>
+                            <td>{{ car.plate_number }}</td>
+                            <td>₵{{ car.rental_price_per_day }}</td>
+                            <td>
+                                {% if car.availability %}
+                                    <span class="status available">Available</span>
+                                {% else %}
+                                    <span class="status unavailable">Rented</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= RECENT RENTALS ================= -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-receipt"></i> Your Recent Rentals</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Car</th>
+                            <th>Rental Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rental in rentals %}
+                        <tr>
+                            <td>{{ rental.customer.first_name }} {{ rental.customer.last_name }}</td>
+                            <td>{{ rental.car.brand }} {{ rental.car.model }}</td>
+                            <td>{{ rental.rental_date }}</td>
+                            <td>{{ rental.return_date }}</td>
+                            <td>{{ rental.status }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No rentals assigned yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= RECENT MAINTENANCES ================= -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-wrench"></i> Your Recent Maintenances</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Car</th>
+                            <th>Service Type</th>
+                            <th>Scheduled Date</th>
+                            <th>Cost</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for maintenance in maintenances %}
+                        <tr>
+                            <td>{{ maintenance.car.brand }} {{ maintenance.car.model }}</td>
+                            <td>{{ maintenance.service_type }}</td>
+                            <td>{{ maintenance.scheduled_date }}</td>
+                            <td>₵{{ maintenance.cost }}</td>
+                            <td>{{ maintenance.notes }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No maintenances assigned yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ================= HIDDEN TABLES ================= -->
+<section class="content" id="dashboard-content" style="display: none;">
+    <div class="container">
+        <div class="table-section">
+            <h2><i class="fas fa-users"></i> All Customers</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>License Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in all_customers %}
+                    <tr>
+                        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.license_number }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No customers yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CARS TABLE ================= -->
+<section class="content table-content" id="cars-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-car"></i> Cars</h2>
+            <div class="page-actions">
+                <form method="get" class="filter-form">
+                    <select name="status">
+                        <option value="">All Cars</option>
+                        <option value="available">Available</option>
+                        <option value="unavailable">Unavailable</option>
+                    </select>
+                    <button type="submit">Filter</button>
+                </form>
+                <a href="{% url 'car_add' %}" class="btn primary">➕ Add Car</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Brand</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                        <th>License Plate</th>
+                        <th>Status</th>
+                        <th>Daily Rate</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in all_cars %}
+                    <tr>
+                        <td>{{ car.brand }}</td>
+                        <td>{{ car.model }}</td>
+                        <td>{{ car.year }}</td>
+                        <td>{{ car.license_plate }}</td>
+                        <td>{{ car.status }}</td>
+                        <td>₵{{ car.daily_rate }}</td>
+                        <td class="actions">
+                            <a href="{% url 'car_edit' pk=car.pk %}">✏ Edit</a>
+                            <a href="{% url 'car_delete' pk=car.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No cars available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CUSTOMERS TABLE ================= -->
+<section class="content table-content" id="customers-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-users"></i> Customers</h2>
+            <div class="page-actions">
+                <form method="get" class="search-form">
+                    <input type="text" name="q" placeholder="Search customers..." value="">
+                    <button type="submit">Search</button>
+                </form>
+                <a href="{% url 'customer_add' %}" class="btn primary">➕ Add Customer</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>License Number</th>
+                        <th>Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in all_customers %}
+                    <tr>
+                        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.license_number }}</td>
+                        <td>{{ customer.address }}</td>
+                        <td class="actions">
+                            <a href="{% url 'customer_edit' pk=customer.pk %}">✏ Edit</a>
+                            <a href="{% url 'customer_delete' pk=customer.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No customers yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= RENTALS TABLE ================= -->
+<section class="content table-content" id="rentals-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-receipt"></i> Rentals</h2>
+            <div class="page-actions">
+                <form method="get" class="search-form">
+                    <input type="text" name="q" placeholder="Search rentals..." value="">
+                    <button type="submit">Search</button>
+                </form>
+                <a href="{% url 'rental_add' %}" class="btn primary">➕ Add Rental</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Car</th>
+                        <th>Employee</th>
+                        <th>Rental Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                        <th>Total Cost</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rental in all_rentals %}
+                    <tr>
+                        <td>{{ rental.customer.first_name }} {{ rental.customer.last_name }}</td>
+                        <td>{{ rental.car.brand }} {{ rental.car.model }}</td>
+                        <td>{{ rental.employee.user.first_name }} {{ rental.employee.user.last_name }}</td>
+                        <td>{{ rental.rental_date }}</td>
+                        <td>{{ rental.return_date }}</td>
+                        <td>{{ rental.status }}</td>
+                        <td>₵{{ rental.total_cost }}</td>
+                        <td class="actions">
+                            <a href="{% url 'rental_edit' pk=rental.pk %}">✏ Edit</a>
+                            <a href="{% url 'rental_delete' pk=rental.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">No rentals yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= PAYMENTS TABLE ================= -->
+<section class="content table-content" id="payments-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-credit-card"></i> Payments</h2>
+            <div class="page-actions">
+                <a href="{% url 'payment_add' %}" class="btn primary">➕ Add Payment</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Rental</th>
+                        <th>Amount</th>
+                        <th>Payment Date</th>
+                        <th>Payment Method</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in all_payments %}
+                    <tr>
+                        <td>{{ payment.customer.first_name }} {{ payment.customer.last_name }}</td>
+                        <td>{{ payment.rental.car.brand }} {{ payment.rental.car.model }} ({{ payment.rental.rental_date }})</td>
+                        <td>₵{{ payment.amount }}</td>
+                        <td>{{ payment.payment_date }}</td>
+                        <td>{{ payment.payment_method }}</td>
+                        <td class="actions">
+                            <a href="{% url 'payment_edit' pk=payment.pk %}">✏ Edit</a>
+                            <a href="{% url 'payment_delete' pk=payment.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No payments yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= MAINTENANCE TABLE ================= -->
+<section class="content table-content" id="maintenance-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-wrench"></i> Maintenance</h2>
+            <div class="page-actions">
+                <a href="{% url 'maintenance_add' %}" class="btn primary">➕ Add Maintenance</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Car</th>
+                        <th>Employee</th>
+                        <th>Service Type</th>
+                        <th>Scheduled Date</th>
+                        <th>Service Date</th>
+                        <th>Cost</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for maintenance in all_maintenances %}
+                    <tr>
+                        <td>{{ maintenance.car.brand }} {{ maintenance.car.model }}</td>
+                        <td>{{ maintenance.employee.user.first_name }} {{ maintenance.employee.user.last_name }}</td>
+                        <td>{{ maintenance.service_type }}</td>
+                        <td>{{ maintenance.scheduled_date }}</td>
+                        <td>{{ maintenance.service_date }}</td>
+                        <td>₵{{ maintenance.cost }}</td>
+                        <td>{{ maintenance.notes|truncatechars:50 }}</td>
+                        <td class="actions">
+                            <a href="{% url 'maintenance_edit' pk=maintenance.pk %}">✏ Edit</a>
+                            <a href="{% url 'maintenance_delete' pk=maintenance.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">No maintenances yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= RESERVATIONS TABLE ================= -->
+<section class="content table-content" id="reservations-content" style="display: none;">
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-calendar-check"></i> Reservations</h2>
+            <div class="page-actions">
+                <a href="{% url 'reservation_add' %}" class="btn primary">➕ Add Reservation</a>
+            </div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Car</th>
+                        <th>Reservation Date</th>
+                        <th>Pickup Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in all_reservations %}
+                    <tr>
+                        <td>{{ reservation.customer.first_name }} {{ reservation.customer.last_name }}</td>
+                        <td>{{ reservation.car.brand }} {{ reservation.car.model }}</td>
+                        <td>{{ reservation.start_date }}</td>
+                        <td>{{ reservation.start_date }}</td>
+                        <td>{{ reservation.end_date }}</td>
+                        <td>{{ reservation.reservation_status }}</td>
+                        <td class="actions">
+                            <a href="{% url 'reservation_edit' pk=reservation.pk %}">✏ Edit</a>
+                            <a href="{% url 'reservation_delete' pk=reservation.pk %}">🗑 Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No reservations yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <p>© {% now "Y" %} Car Rental System. All rights reserved.</p>
+    <p>Employee Dashboard | Last updated: {% now "F d, Y" %}</p>
+</footer>
+<script>
+// Function to show/hide table sections
+function showTable(tableName) {
+    // Hide all table sections
+    document.querySelectorAll('.table-content').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Hide dashboard content
+    const dashboardContent = document.getElementById('dashboard-content');
+    if (dashboardContent) {
+        dashboardContent.style.display = 'none';
+    }
+    
+    // Hide or show the dashboard view
+    const dashboardView = document.getElementById('dashboard-view');
+    if (dashboardView) {
+        if (tableName === 'dashboard') {
+            dashboardView.style.display = 'block';
+        } else {
+            dashboardView.style.display = 'none';
+        }
+    }
+    
+    // Show selected table section
+    if (tableName !== 'dashboard') {
+        const selectedSection = document.getElementById(tableName + '-content');
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
+            // Scroll to the section
+            selectedSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+}
+
+// Initialize charts on dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial state to dashboard
+    showTable('dashboard');
+    
+    // Only initialize charts if we're on the dashboard
+    const rentalsChart = document.getElementById('rentalsChart');
+    const revenueChart = document.getElementById('revenueChart');
+    
+    if (rentalsChart) {
+        const carLabels = JSON.parse(document.getElementById('car-labels').textContent);
+        const carData = JSON.parse(document.getElementById('car-data').textContent);
+        
+        new Chart(rentalsChart, {
+            type: 'bar',
+            data: {
+                labels: carLabels,
+                datasets: [{
+                    label: 'Number of Rentals',
+                    data: carData,
+                    backgroundColor: '#3498db'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    if (revenueChart) {
+        const monthLabels = JSON.parse(document.getElementById('month-labels').textContent);
+        const monthData = JSON.parse(document.getElementById('month-data').textContent);
+        
+        new Chart(revenueChart, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Revenue (₵)',
+                    data: monthData,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    }
+});
+</script>
+
+<!-- Custom JavaScript -->
+<script src="{% static 'js/script.js' %}"></script>
+
+</body>
+</html>

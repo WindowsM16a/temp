@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Car Rental System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-car"></i> Car Rental System</h1>
+                <p>Login to access your account</p>
+            </div>
+
+            <div class="login-body">
+                <!-- Display Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% elif message.tags == 'success' %}
+                            <div class="success-message">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="login-form" id="loginForm">
+                    {% csrf_token %}
+                    
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <div class="form-group-header">
+                            <i class="fas fa-envelope"></i>
+                            <label for="id_username">Email Address</label>
+                        </div>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="error-text" style="color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem;">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group password-toggle">
+                        <div class="form-group-header">
+                            <i class="fas fa-lock"></i>
+                            <label for="id_password">Password</label>
+                        </div>
+                        {{ form.password }}
+                        <i class="fas fa-eye toggle-icon" id="togglePassword"></i>
+                        {% if form.password.errors %}
+                            <div class="error-text" style="color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem;">
+                                {{ form.password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- User Type Selection -->
+                    <div class="form-group">
+                        <label>Login as:</label>
+                        <div class="user-type-select">
+                            <label class="user-type-option employee {% if 'employee' in form.user_type.value %}selected{% endif %}">
+                                <div class="user-type-content">
+                                    <input type="checkbox" name="user_type" value="employee"
+                                           {% if 'employee' in form.user_type.value %}checked{% endif %}>
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>Employee</span>
+                                </div>
+                            </label>
+                            <label class="user-type-option admin {% if 'admin' in form.user_type.value %}selected{% endif %}">
+                                <div class="user-type-content">
+                                    <input type="checkbox" name="user_type" value="admin"
+                                           {% if 'admin' in form.user_type.value %}checked{% endif %}>
+                                    <i class="fas fa-user-shield"></i>
+                                    <span>Administrator</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% if form.user_type.errors %}
+                            <div class="error-text" style="color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem;">
+                                {{ form.user_type.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="remember" name="remember" style="transform: scale(1.2);">
+                        <label for="remember" style="margin: 0; font-weight: normal;">Remember me</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="login-btn" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+
+                    <!-- Forgot Password -->
+                    <div class="login-footer">
+                        <a href="{% url 'password_reset' %}">
+                            <i class="fas fa-key"></i> Forgot Password?
+                        </a>
+                        <p style="margin-top: 0.5rem;">
+                            Need help? Contact support: 
+                            <a href="mailto:support@carrental.com">support@carrental.com</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script> 
+</body>
+</html>

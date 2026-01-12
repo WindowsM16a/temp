@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reservations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<!-- ================= RESERVATIONS PAGE ================= -->
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-car"></i> Car Rental System
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <ul class="nav-links">
+        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'customer_list' %}">Customers</a></li>
+        <li><a href="{% url 'car_list' %}">Cars</a></li>
+        <li><a href="{% url 'rental_list' %}">Rentals</a></li>
+        <li><a href="{% url 'payment_list' %}">Payments</a></li>
+        <li><a href="{% url 'reservation_list' %}" class="active">Reservations</a></li>
+        <li><a href="{% url 'maintenance_list' %}">Maintenance</a></li>
+        <li><a href="{% url 'employee_list' %}">Employees</a></li>
+    </ul>
+</nav>
+
+<div class="page-header">
+    <h2>Reservations</h2>
+    <div class="page-actions">
+        <a href="{% url 'reservation_add' %}" class="btn primary">➕ Add Reservation</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Car</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td>{{ reservation.customer.first_name }} {{ reservation.customer.last_name }}</td>
+                <td>{{ reservation.car.brand }} {{ reservation.car.model }}</td>
+                <td>{{ reservation.start_date }}</td>
+                <td>{{ reservation.end_date }}</td>
+                <td><span class="status-badge {% if reservation.reservation_status == 'approved' %}active{% elif reservation.reservation_status == 'pending' %}available{% else %}unavailable{% endif %}">{{ reservation.get_reservation_status_display }}</span></td>
+                <td class="actions">
+                    <a href="{% url 'reservation_edit' pk=reservation.pk %}">✏ Edit</a>
+                    <a href="{% url 'reservation_delete' pk=reservation.pk %}">🗑 Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No reservations yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<hr style="margin: 3rem; border: 1px dashed #ddd;">
+
+
+
+<script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
